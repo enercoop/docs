@@ -688,6 +688,7 @@ public class FileResource extends BaseResource {
      * @apiVersion 1.5.0
      *
      * @param documentId Document ID
+     * @param shareId Share ID
      * @return Response
      */
     @GET
@@ -697,7 +698,6 @@ public class FileResource extends BaseResource {
             @QueryParam("id") String documentId,
             @QueryParam("share") String shareId) {
         authenticate();
-        
         // Get the document
         DocumentDao documentDao = new DocumentDao();
         DocumentDto documentDto = documentDao.getDocument(documentId, PermType.READ, getTargetIdList(shareId));
@@ -707,9 +707,39 @@ public class FileResource extends BaseResource {
         
         // Get files and user associated with this document
         FileDao fileDao = new FileDao();
-        final UserDao userDao = new UserDao();
         final List<File> fileList = fileDao.getByDocumentId(principal.getId(), documentId);
-        
+        String zipFileName = documentDto.getTitle().replaceAll("\\W+", "_");
+        return sentZippedFiles(zipFileName, fileList);
+    }
+
+    /**
+     * Returns a list of zipped files
+     *
+     * @api {post} /file/zip Get zipped files
+     * @apiName GetFilesZip
+     * @apiGroup File
+     * @apiParam {String[]} files IDs
+     * @apiSuccess {Object} file The ZIP file is the whole response
+     * @apiError (server) InternalServerError Error creating the ZIP file
+     * @apiPermission none
+     * @apiVersion 1.5.0
+     *
+     * @param filesIdsList Files IDs
+     * @return Response
+     */
+    @POST
+    @Path("zip")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response zip(
+            @FormParam("files") List<String> filesIdsList) {
+        authenticate();
+        List<File> fileList = findFiles(filesIdsList);
+        return sentZippedFiles("files", fileList);
+    }
+
+    private Response sentZippedFiles(String zipFileName, List<File> fileList) {
+        final UserDao userDao = new UserDao();
+
         // Create the ZIP stream
         StreamingOutput stream = outputStream -> {
             try (ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)) {
@@ -735,11 +765,11 @@ public class FileResource extends BaseResource {
             }
             outputStream.close();
         };
-        
+
         // Write to the output
         return Response.ok(stream)
                 .header("Content-Type", "application/zip")
-                .header("Content-Disposition", "attachment; filename=\"" + documentDto.getTitle().replaceAll("\\W+", "_") + ".zip\"")
+                .header("Content-Disposition", "attachment; filename=\"" + zipFileName + ".zip\"")
                 .build();
     }
 
@@ -757,6 +787,27 @@ public class FileResource extends BaseResource {
             throw new NotFoundException();
         }
 
+        checkFileAccessible(shareId, file);
+        return file;
+    }
+
+
+    /**
+     * Find a list of giles with access rights checking.
+     *
+     * @param filesIds Files IDs
+     * @return List<File>
+     */
+    private List<File> findFiles(List<String> filesIds) {
+        FileDao fileDao = new FileDao();
+        List<File> files = fileDao.getFiles(filesIds);
+        for (File file : files) {
+            checkFileAccessible(null, file);
+        }
+        return files;
+    }
+
+    private void checkFileAccessible(String shareId, File file) {
         if (file.getDocumentId() == null) {
             // It's an orphan file
             if (!file.getUserId().equals(principal.getId())) {
@@ -770,6 +821,5 @@ public class FileResource extends BaseResource {
                 throw new ForbiddenClientException();
             }
         }
-        return file;
     }
 }
