@@ -491,8 +491,9 @@ public class DocumentResource extends BaseResource {
             @QueryParam("offset") Integer offset,
             @QueryParam("sort_column") Integer sortColumn,
             @QueryParam("asc") Boolean asc,
-            @QueryParam("search") String search) {
-        return list(limit, offset, sortColumn, asc, search);
+            @QueryParam("search") String search,
+            @QueryParam("files") Boolean files) {
+        return list(limit, offset, sortColumn, asc, search, files);
     }
 
     /**
