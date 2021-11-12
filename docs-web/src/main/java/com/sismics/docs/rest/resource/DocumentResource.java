@@ -425,7 +425,27 @@ public class DocumentResource extends BaseResource {
         
         return Response.ok().entity(response.build()).build();
     }
-    
+
+    /**
+     *
+     * @param limit Page limit
+     * @param offset Page offset
+     * @param sortColumn Sort column
+     * @param asc Sorting
+     * @param search Search query
+     * @return Response
+     */
+    @POST
+    @Path("list")
+    public Response listPost(
+            @QueryParam("limit") Integer limit,
+            @QueryParam("offset") Integer offset,
+            @QueryParam("sort_column") Integer sortColumn,
+            @QueryParam("asc") Boolean asc,
+            @QueryParam("search") String search) {
+        return list(limit, offset, sortColumn, asc, search);
+    }
+
     /**
      * Parse a query according to the specified syntax, eg.:
      * tag:assurance tag:other before:2012 after:2011-09 shared:yes lang:fra thing
