@@ -74,7 +74,7 @@ public class FileDao {
      * Returns an active file.
      * 
      * @param id File ID
-     * @return Document
+     * @return File
      */
     public File getFile(String id) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
@@ -86,13 +86,30 @@ public class FileDao {
             return null;
         }
     }
-    
+
+    /**
+     * Returns a list of active files.
+     *
+     * @param ids Files IDs
+     * @return Document
+     */
+    public List<File> getFiles(List<String> ids) {
+        EntityManager em = ThreadLocalContext.get().getEntityManager();
+        Query q = em.createQuery("select f from File f where f.id in :ids and f.deleteDate is null");
+        q.setParameter("ids", ids);
+        try {
+            return q.getResultList();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
+
     /**
      * Returns an active file.
      * 
      * @param id File ID
      * @param userId User ID
-     * @return Document
+     * @return File
      */
     public File getFile(String id, String userId) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
