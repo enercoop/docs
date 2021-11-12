@@ -87,6 +87,11 @@ public class DocumentCriteria {
      */
     private String title;
 
+    /**
+     * The titles
+     */
+    private List<String> titles;
+
     public List<String> getTargetIdList() {
         return targetIdList;
     }
@@ -206,5 +211,13 @@ public class DocumentCriteria {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public List<String> getTitles() {
+        return titles;
+    }
+
+    public void setTitles(List<String> titles) {
+        this.titles = titles;
     }
 }

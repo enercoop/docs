@@ -299,6 +299,10 @@ public class LuceneIndexingHandler implements IndexingHandler {
             criteriaList.add("d.DOC_TITLE_C = :title");
             parameterMap.put("title", criteria.getTitle());
         }
+        if (criteria.getTitles() != null) {
+            criteriaList.add("d.DOC_TITLE_C in :title");
+            parameterMap.put("titles", criteria.getTitles());
+        }
         if (criteria.getTagIdList() != null && !criteria.getTagIdList().isEmpty()) {
             int index = 0;
             for (List<String> tagIdList : criteria.getTagIdList()) {
