@@ -674,7 +674,7 @@ public class DocumentResource extends BaseResource {
                     break;
                 case "titles":
                     // New titles criteria
-                    documentCriteria.setTitles(Arrays.asList(params[1].split("|")));
+                    documentCriteria.setTitles(Arrays.asList(params[1].split("\\|")));
                     break;
                 default:
                     fullQuery.add(criteria);
