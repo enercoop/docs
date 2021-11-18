@@ -33,6 +33,8 @@ RUN apt-get update && \
     tesseract-ocr-vie && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
+RUN usermod -u 1003 jetty
+
 USER jetty
 
 ADD docs.xml /var/lib/jetty/webapps/docs.xml
