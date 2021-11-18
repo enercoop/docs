@@ -487,12 +487,12 @@ public class DocumentResource extends BaseResource {
     @POST
     @Path("list")
     public Response listPost(
-            @QueryParam("limit") Integer limit,
-            @QueryParam("offset") Integer offset,
-            @QueryParam("sort_column") Integer sortColumn,
-            @QueryParam("asc") Boolean asc,
-            @QueryParam("search") String search,
-            @QueryParam("files") Boolean files) {
+            @FormParam("limit") Integer limit,
+            @FormParam("offset") Integer offset,
+            @FormParam("sort_column") Integer sortColumn,
+            @FormParam("asc") Boolean asc,
+            @FormParam("search") String search,
+            @FormParam("files") Boolean files) {
         return list(limit, offset, sortColumn, asc, search, files);
     }
 
