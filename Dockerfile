@@ -1,4 +1,5 @@
-FROM jetty:9-jre11
+FROM sismics/ubuntu-jetty:9.4.12-2
+LABEL maintainer="b.gamard@sismics.com"
 
 USER root
 RUN apt-get update && \
