@@ -7,7 +7,6 @@ import com.sismics.util.context.ThreadLocalContext;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
-import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.util.Collections;
 import java.util.Date;
@@ -49,10 +48,9 @@ public class FileDao {
      * @param limit Limit
      * @return List of files
      */
-    @SuppressWarnings("unchecked")
     public List<File> findAll(int offset, int limit) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
-        Query q = em.createQuery("select f from File f where f.deleteDate is null");
+        TypedQuery<File> q = em.createQuery("select f from File f where f.deleteDate is null", File.class);
         q.setFirstResult(offset);
         q.setMaxResults(limit);
         return q.getResultList();
@@ -64,10 +62,9 @@ public class FileDao {
      * @param userId User ID
      * @return List of files
      */
-    @SuppressWarnings("unchecked")
     public List<File> findByUserId(String userId) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
-        Query q = em.createQuery("select f from File f where f.userId = :userId and f.deleteDate is null");
+        TypedQuery<File> q = em.createQuery("select f from File f where f.userId = :userId and f.deleteDate is null", File.class);
         q.setParameter("userId", userId);
         return q.getResultList();
     }
@@ -80,10 +77,10 @@ public class FileDao {
      */
     public File getFile(String id) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
-        Query q = em.createQuery("select f from File f where f.id = :id and f.deleteDate is null");
+        TypedQuery<File> q = em.createQuery("select f from File f where f.id = :id and f.deleteDate is null", File.class);
         q.setParameter("id", id);
         try {
-            return (File) q.getSingleResult();
+            return q.getSingleResult();
         } catch (NoResultException e) {
             return null;
         }
@@ -115,11 +112,11 @@ public class FileDao {
      */
     public File getFile(String id, String userId) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
-        Query q = em.createQuery("select f from File f where f.id = :id and f.userId = :userId and f.deleteDate is null");
+        TypedQuery<File> q = em.createQuery("select f from File f where f.id = :id and f.userId = :userId and f.deleteDate is null", File.class);
         q.setParameter("id", id);
         q.setParameter("userId", userId);
         try {
-            return (File) q.getSingleResult();
+            return q.getSingleResult();
         } catch (NoResultException e) {
             return null;
         }
@@ -135,9 +132,9 @@ public class FileDao {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
             
         // Get the file
-        Query q = em.createQuery("select f from File f where f.id = :id and f.deleteDate is null");
+        TypedQuery<File> q = em.createQuery("select f from File f where f.id = :id and f.deleteDate is null", File.class);
         q.setParameter("id", id);
-        File fileDb = (File) q.getSingleResult();
+        File fileDb = q.getSingleResult();
         
         // Delete the file
         Date dateNow = new Date();
@@ -157,9 +154,9 @@ public class FileDao {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
         
         // Get the file
-        Query q = em.createQuery("select f from File f where f.id = :id and f.deleteDate is null");
+        TypedQuery<File> q = em.createQuery("select f from File f where f.id = :id and f.deleteDate is null", File.class);
         q.setParameter("id", file.getId());
-        File fileDb = (File) q.getSingleResult();
+        File fileDb = q.getSingleResult();
 
         // Update the file
         fileDb.setDocumentId(file.getDocumentId());
@@ -181,10 +178,10 @@ public class FileDao {
      */
     public File getActiveById(String id) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
-        Query q = em.createQuery("select f from File f where f.id = :id and f.deleteDate is null");
+        TypedQuery<File> q = em.createQuery("select f from File f where f.id = :id and f.deleteDate is null", File.class);
         q.setParameter("id", id);
         try {
-            return (File) q.getSingleResult();
+            return q.getSingleResult();
         } catch (NoResultException e) {
             return null;
         }
@@ -227,10 +224,9 @@ public class FileDao {
      * @param versionId Version ID
      * @return List of files
      */
-    @SuppressWarnings("unchecked")
     public List<File> getByVersionId(String versionId) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
-        Query q = em.createQuery("select f from File f where f.versionId = :versionId and f.deleteDate is null order by f.order asc");
+        TypedQuery<File> q = em.createQuery("select f from File f where f.versionId = :versionId and f.deleteDate is null order by f.order asc", File.class);
         q.setParameter("versionId", versionId);
         return q.getResultList();
     }
