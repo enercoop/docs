@@ -686,14 +686,15 @@ public class FileResource extends BaseResource {
             @QueryParam("id") String documentId,
             @QueryParam("share") String shareId) {
         authenticate();
+
         // Get the document
         DocumentDao documentDao = new DocumentDao();
         DocumentDto documentDto = documentDao.getDocument(documentId, PermType.READ, getTargetIdList(shareId));
         if (documentDto == null) {
             throw new NotFoundException();
         }
-        
-        // Get files and user associated with this document
+
+        // Get files associated with this document
         FileDao fileDao = new FileDao();
         final List<File> fileList = fileDao.getByDocumentId(principal.getId(), documentId);
         String zipFileName = documentDto.getTitle().replaceAll("\\W+", "_");
@@ -710,7 +711,7 @@ public class FileResource extends BaseResource {
      * @apiSuccess {Object} file The ZIP file is the whole response
      * @apiError (server) InternalServerError Error creating the ZIP file
      * @apiPermission none
-     * @apiVersion 1.5.0
+     * @apiVersion 1.11.0
      *
      * @param filesIdsList Files IDs
      * @return Response
@@ -725,6 +726,9 @@ public class FileResource extends BaseResource {
         return sentZippedFiles("files", fileList);
     }
 
+    /**
+     * Sent the content of a list of files.
+     */
     private Response sentZippedFiles(String zipFileName, List<File> fileList) {
         final UserDao userDao = new UserDao();
 
@@ -774,7 +778,6 @@ public class FileResource extends BaseResource {
         if (file == null) {
             throw new NotFoundException();
         }
-
         checkFileAccessible(shareId, file);
         return file;
     }
@@ -789,12 +792,20 @@ public class FileResource extends BaseResource {
     private List<File> findFiles(List<String> filesIds) {
         FileDao fileDao = new FileDao();
         List<File> files = fileDao.getFiles(filesIds);
+        if (files.isEmpty()) {
+            throw new NotFoundException();
+        }
         for (File file : files) {
             checkFileAccessible(null, file);
         }
         return files;
     }
 
+    /**
+     * Check if a file is accessible to the current user
+     * @param shareId Share ID
+     * @param file
+     */
     private void checkFileAccessible(String shareId, File file) {
         if (file.getDocumentId() == null) {
             // It's an orphan file
