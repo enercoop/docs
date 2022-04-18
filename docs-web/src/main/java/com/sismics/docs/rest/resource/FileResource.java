@@ -575,6 +575,7 @@ public class FileResource extends BaseResource {
      */
     @GET
     @Path("{id: [a-z0-9\\-]+}/data")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response data(
             @PathParam("id") final String fileId,
             @QueryParam("share") String shareId,
@@ -664,13 +665,13 @@ public class FileResource extends BaseResource {
     /**
      * Returns all files from a document, zipped.
      *
-     * @api {get} /file/zip Get zipped files
+     * @api {get} /file/zip Returns all files from a document, zipped.
      * @apiName GetFileZip
      * @apiGroup File
      * @apiParam {String} id Document ID
      * @apiParam {String} share Share ID
      * @apiSuccess {Object} file The ZIP file is the whole response
-     * @apiError (client) NotFound Document not found
+     * @apiError (client) NotFoundException Document not found
      * @apiError (server) InternalServerError Error creating the ZIP file
      * @apiPermission none
      * @apiVersion 1.5.0
@@ -681,12 +682,12 @@ public class FileResource extends BaseResource {
      */
     @GET
     @Path("zip")
-    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    @Produces({MediaType.APPLICATION_OCTET_STREAM, MediaType.TEXT_PLAIN})
     public Response zip(
             @QueryParam("id") String documentId,
             @QueryParam("share") String shareId) {
         authenticate();
-
+        
         // Get the document
         DocumentDao documentDao = new DocumentDao();
         DocumentDto documentDto = documentDao.getDocument(documentId, PermType.READ, getTargetIdList(shareId));
@@ -698,17 +699,18 @@ public class FileResource extends BaseResource {
         FileDao fileDao = new FileDao();
         final List<File> fileList = fileDao.getByDocumentId(principal.getId(), documentId);
         String zipFileName = documentDto.getTitle().replaceAll("\\W+", "_");
-        return sentZippedFiles(zipFileName, fileList);
+        return sendZippedFiles(zipFileName, fileList);
     }
 
     /**
-     * Returns a list of zipped files
+     * Returns a list of files, zipped
      *
-     * @api {post} /file/zip Get zipped files
+     * @api {post} /file/zip Returns a list of files, zipped
      * @apiName GetFilesZip
      * @apiGroup File
      * @apiParam {String[]} files IDs
      * @apiSuccess {Object} file The ZIP file is the whole response
+     * @apiError (client) NotFoundException Files not found
      * @apiError (server) InternalServerError Error creating the ZIP file
      * @apiPermission none
      * @apiVersion 1.11.0
@@ -718,18 +720,18 @@ public class FileResource extends BaseResource {
      */
     @POST
     @Path("zip")
-    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    @Produces({MediaType.APPLICATION_OCTET_STREAM, MediaType.TEXT_PLAIN})
     public Response zip(
             @FormParam("files") List<String> filesIdsList) {
         authenticate();
         List<File> fileList = findFiles(filesIdsList);
-        return sentZippedFiles("files", fileList);
+        return sendZippedFiles("files", fileList);
     }
 
     /**
      * Sent the content of a list of files.
      */
-    private Response sentZippedFiles(String zipFileName, List<File> fileList) {
+    private Response sendZippedFiles(String zipFileName, List<File> fileList) {
         final UserDao userDao = new UserDao();
 
         // Create the ZIP stream
@@ -757,7 +759,7 @@ public class FileResource extends BaseResource {
             }
             outputStream.close();
         };
-
+        
         // Write to the output
         return Response.ok(stream)
                 .header("Content-Type", "application/zip")
@@ -784,7 +786,7 @@ public class FileResource extends BaseResource {
 
 
     /**
-     * Find a list of giles with access rights checking.
+     * Find a list of files with access rights checking.
      *
      * @param filesIds Files IDs
      * @return List<File>
@@ -792,9 +794,6 @@ public class FileResource extends BaseResource {
     private List<File> findFiles(List<String> filesIds) {
         FileDao fileDao = new FileDao();
         List<File> files = fileDao.getFiles(filesIds);
-        if (files.isEmpty()) {
-            throw new NotFoundException();
-        }
         for (File file : files) {
             checkFileAccessible(null, file);
         }

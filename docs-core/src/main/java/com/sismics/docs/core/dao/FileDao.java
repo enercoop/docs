@@ -79,16 +79,12 @@ public class FileDao {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
         TypedQuery<File> q = em.createQuery("select f from File f where f.id in :ids and f.deleteDate is null", File.class);
         q.setParameter("ids", ids);
-        try {
-            return q.getResultList();
-        } catch (NoResultException e) {
-            return null;
-        }
+        return q.getResultList();
     }
-
+    
     /**
-     * Returns an active file or null if the file doesn't exist.
-     *
+     * Returns an active file or null.
+     * 
      * @param id File ID
      * @return File
      */
