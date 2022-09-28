@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Listener on file processing.
- * 
+ *
  * @author bgamard
  */
 public class FileProcessingAsyncListener {
@@ -137,6 +137,9 @@ public class FileProcessingAsyncListener {
      * @return Text content
      */
     private String extractContent(FileEvent event, User user, File file) {
+        if (true) {
+            return null;
+        }
         // Find a format handler
         FormatHandler formatHandler = FormatHandlerUtil.find(file.getMimeType());
         if (formatHandler == null) {
