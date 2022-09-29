@@ -434,11 +434,9 @@ public class DocumentResource extends BaseResource {
 
         // Find the files of the documents
         List<File> filesList = null;
-        if (Boolean.TRUE == files) {
-            Iterable<String> documentsIds = CollectionUtils.collect(paginatedList.getResultList(), DocumentDto::getId);
-            FileDao fileDao = new FileDao();
-            filesList = fileDao.getByDocumentsIds(documentsIds);
-        }
+        Iterable<String> documentsIds = CollectionUtils.collect(paginatedList.getResultList(), DocumentDto::getId);
+        FileDao fileDao = new FileDao();
+        filesList = fileDao.getByDocumentsIds(documentsIds);
 
         for (DocumentDto documentDto : paginatedList.getResultList()) {
             // Get tags accessible by the current user on this document
@@ -453,6 +451,9 @@ public class DocumentResource extends BaseResource {
                         .add("color", tagDto.getColor()));
             }
 
+            // Find files matching the document
+            Collection<File> filesOfDocument = CollectionUtils.select(filesList, file -> file.getDocumentId().equals(documentDto.getId()));
+
             JsonObjectBuilder documentObjectBuilder = Json.createObjectBuilder()
                     .add("id", documentDto.getId())
                     .add("highlight", JsonUtil.nullable(documentDto.getHighlight()))
@@ -465,16 +466,14 @@ public class DocumentResource extends BaseResource {
                     .add("shared", documentDto.getShared())
                     .add("active_route", documentDto.isActiveRoute())
                     .add("current_step_name", JsonUtil.nullable(documentDto.getCurrentStepName()))
-                    .add("file_count", documentDto.getFileCount())
+                    .add("file_count", filesOfDocument.size())
                     .add("tags", tags);
             if (Boolean.TRUE == files) {
                 JsonArrayBuilder filesArrayBuilder = Json.createArrayBuilder();
-                // Find files matching the document
-                Collection<File> filesOfDocument = CollectionUtils.select(filesList, file -> file.getDocumentId().equals(documentDto.getId()));
                 for (File fileDb : filesOfDocument) {
                     filesArrayBuilder.add(RestUtil.fileToJsonObjectBuilder(fileDb));
                 }
-                documentObjectBuilder.add("files", filesArrayBuilder);
+                    documentObjectBuilder.add("files", filesArrayBuilder);
             }
             documents.add(documentObjectBuilder);
         }
