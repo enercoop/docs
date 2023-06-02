@@ -8,8 +8,8 @@ import org.hibernate.service.ServiceRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -85,6 +85,7 @@ public final class EMF {
         Path dbDirectory = DirectoryUtil.getDbDirectory();
         String dbFile = dbDirectory.resolve("docs").toAbsolutePath().toString();
         if (Strings.isNullOrEmpty(databaseUrl)) {
+            log.warn("Using an embedded H2 database. Only suitable for testing purpose, not for production!");
             props.put("hibernate.connection.driver_class", "org.h2.Driver");
             props.put("hibernate.dialect", "org.hibernate.dialect.HSQLDialect");
             props.put("hibernate.connection.url", "jdbc:h2:file:" + dbFile + ";CACHE_SIZE=65536;LOCK_TIMEOUT=10000");
@@ -101,12 +102,9 @@ public final class EMF {
         props.put("hibernate.format_sql", "false");
         props.put("hibernate.max_fetch_depth", "5");
         props.put("hibernate.cache.use_second_level_cache", "false");
-        props.put("hibernate.c3p0.min_size", "1");
-        props.put("hibernate.c3p0.max_size", "10");
-        props.put("hibernate.c3p0.timeout", "5000");
-        props.put("hibernate.c3p0.max_statements", "0");
-        props.put("hibernate.c3p0.acquire_increment", "1");
-        props.put("hibernate.c3p0.idle_test_period", "10");
+        props.put("hibernate.connection.initial_pool_size", "1");
+        props.put("hibernate.connection.pool_size", "10");
+        props.put("hibernate.connection.pool_validation_interval", "5");
         return props;
     }
     

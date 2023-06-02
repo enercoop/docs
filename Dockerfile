@@ -1,4 +1,4 @@
-FROM sismics/ubuntu-jetty:9.4.36
+FROM sismics/ubuntu-jetty:11.0.14
 LABEL maintainer="b.gamard@sismics.com"
 
 RUN apt-get update && \
@@ -32,13 +32,13 @@ RUN apt-get update && \
     tesseract-ocr-tur \
     tesseract-ocr-ukr \
     tesseract-ocr-vie && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    apt-get clean && rm -rf /var/lib/apt/lists/* && \
+    mkdir /app && \
+    cd /app && \
+    java -jar /opt/jetty/start.jar --add-modules=server,http,webapp,deploy
 
-# Remove the embedded javax.mail jar from Jetty
-RUN rm -f /opt/jetty/lib/mail/javax.mail.glassfish-*.jar
-
-ADD docs.xml /opt/jetty/webapps/docs.xml
-ADD docs-web/target/docs-web-*.war /opt/jetty/webapps/docs.war
+ADD docs.xml /app/webapps/docs.xml
+ADD docs-web/target/docs-web-*.war /app/webapps/docs.war
 
 USER root
 
@@ -52,3 +52,7 @@ RUN chown -R jetty /tmp
 USER jetty
 
 ENV JAVA_OPTIONS -Xmx1g
+
+WORKDIR /app
+CMD ["java", "-jar", "/opt/jetty/start.jar"]
+

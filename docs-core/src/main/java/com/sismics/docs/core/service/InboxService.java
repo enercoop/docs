@@ -18,7 +18,7 @@ import com.sismics.docs.core.util.TransactionUtil;
 import com.sismics.docs.core.util.jpa.SortCriteria;
 import com.sismics.util.EmailUtil;
 import com.sismics.util.context.ThreadLocalContext;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -159,6 +159,7 @@ public class InboxService extends AbstractScheduledService {
         String port = ConfigUtil.getConfigStringValue(ConfigType.INBOX_PORT);
         properties.put("mail.imap.host", ConfigUtil.getConfigStringValue(ConfigType.INBOX_HOSTNAME));
         properties.put("mail.imap.port", port);
+        properties.setProperty("mail.imap.starttls.enable", ConfigUtil.getConfigStringValue(ConfigType.INBOX_STARTTLS).toString());
         boolean isSsl = "993".equals(port);
         properties.put("mail.imap.ssl.enable", String.valueOf(isSsl));
         properties.setProperty("mail.imap.socketFactory.class",
