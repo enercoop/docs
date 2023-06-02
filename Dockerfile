@@ -45,8 +45,8 @@ USER root
 RUN usermod -u 1003 jetty
 RUN groupmod -g 1003 jetty
 
-RUN chown jetty /opt/jetty/webapps/docs.xml
-RUN chown jetty /opt/jetty/webapps/docs.war
+RUN chown jetty /app/webapps/docs.xml
+RUN chown jetty /app/webapps/docs.war
 RUN chown -R jetty /tmp
 
 USER jetty
