@@ -309,7 +309,7 @@ public class LuceneIndexingHandler implements IndexingHandler {
             criteriaList.add("d.DOC_TITLE_C in :title");
             parameterMap.put("title", criteria.getTitleList());
         }
-        if (criteria.getTagIdList() != null && !criteria.getTagIdList().isEmpty()) {
+        if (!criteria.getTagIdList().isEmpty()) {
             int index = 0;
             for (List<String> tagIdList : criteria.getTagIdList()) {
                 List<String> tagCriteriaList = Lists.newArrayList();
@@ -322,7 +322,7 @@ public class LuceneIndexingHandler implements IndexingHandler {
                 criteriaList.add("(" + Joiner.on(" OR ").join(tagCriteriaList) + ")");
             }
         }
-        if (criteria.getExcludedTagIdList() != null && !criteria.getExcludedTagIdList().isEmpty()) {
+        if (!criteria.getExcludedTagIdList().isEmpty()) {
             int index = 0;
             for (List<String> tagIdList : criteria.getExcludedTagIdList()) {
                 List<String> tagCriteriaList = Lists.newArrayList();
