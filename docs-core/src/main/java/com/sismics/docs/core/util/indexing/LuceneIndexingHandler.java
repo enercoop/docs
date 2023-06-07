@@ -26,9 +26,18 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
-import org.apache.lucene.index.*;
+import org.apache.lucene.index.CheckIndex;
+import org.apache.lucene.index.ConcurrentMergeScheduler;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.simple.SimpleQueryParser;
-import org.apache.lucene.search.*;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.highlight.Highlighter;
 import org.apache.lucene.search.highlight.QueryScorer;
 import org.apache.lucene.search.highlight.SimpleHTMLEncoder;
@@ -47,7 +56,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Lucene indexing handler.
@@ -291,13 +305,9 @@ public class LuceneIndexingHandler implements IndexingHandler {
             criteriaList.add("d.DOC_UPDATEDATE_D <= :updateDateMax");
             parameterMap.put("updateDateMax", criteria.getUpdateDateMax());
         }
-        if (criteria.getTitle() != null) {
-            criteriaList.add("d.DOC_TITLE_C = :title");
-            parameterMap.put("title", criteria.getTitle());
-        }
-        if (criteria.getTitles() != null) {
-            criteriaList.add("d.DOC_TITLE_C in :titles");
-            parameterMap.put("titles", criteria.getTitles());
+        if (!criteria.getTitleList().isEmpty()) {
+            criteriaList.add("d.DOC_TITLE_C in :title");
+            parameterMap.put("title", criteria.getTitleList());
         }
         if (criteria.getTagIdList() != null && !criteria.getTagIdList().isEmpty()) {
             int index = 0;

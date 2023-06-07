@@ -7,10 +7,22 @@ import com.sismics.docs.core.constant.AclType;
 import com.sismics.docs.core.constant.ConfigType;
 import com.sismics.docs.core.constant.Constants;
 import com.sismics.docs.core.constant.PermType;
-import com.sismics.docs.core.dao.*;
+import com.sismics.docs.core.dao.AclDao;
+import com.sismics.docs.core.dao.ContributorDao;
+import com.sismics.docs.core.dao.DocumentDao;
+import com.sismics.docs.core.dao.FileDao;
+import com.sismics.docs.core.dao.RelationDao;
+import com.sismics.docs.core.dao.RouteStepDao;
+import com.sismics.docs.core.dao.TagDao;
+import com.sismics.docs.core.dao.UserDao;
 import com.sismics.docs.core.dao.criteria.DocumentCriteria;
 import com.sismics.docs.core.dao.criteria.TagCriteria;
-import com.sismics.docs.core.dao.dto.*;
+import com.sismics.docs.core.dao.dto.AclDto;
+import com.sismics.docs.core.dao.dto.ContributorDto;
+import com.sismics.docs.core.dao.dto.DocumentDto;
+import com.sismics.docs.core.dao.dto.RelationDto;
+import com.sismics.docs.core.dao.dto.RouteStepDto;
+import com.sismics.docs.core.dao.dto.TagDto;
 import com.sismics.docs.core.event.DocumentCreatedAsyncEvent;
 import com.sismics.docs.core.event.DocumentDeletedAsyncEvent;
 import com.sismics.docs.core.event.DocumentUpdatedAsyncEvent;
@@ -19,7 +31,13 @@ import com.sismics.docs.core.model.context.AppContext;
 import com.sismics.docs.core.model.jpa.Document;
 import com.sismics.docs.core.model.jpa.File;
 import com.sismics.docs.core.model.jpa.User;
-import com.sismics.docs.core.util.*;
+import com.sismics.docs.core.util.ConfigUtil;
+import com.sismics.docs.core.util.DirectoryUtil;
+import com.sismics.docs.core.util.DocumentUtil;
+import com.sismics.docs.core.util.FileUtil;
+import com.sismics.docs.core.util.MetadataUtil;
+import com.sismics.docs.core.util.PdfUtil;
+import com.sismics.docs.core.util.TagUtil;
 import com.sismics.docs.core.util.jpa.PaginatedList;
 import com.sismics.docs.core.util.jpa.PaginatedLists;
 import com.sismics.docs.core.util.jpa.SortCriteria;
@@ -33,6 +51,21 @@ import com.sismics.util.EmailUtil;
 import com.sismics.util.JsonUtil;
 import com.sismics.util.context.ThreadLocalContext;
 import com.sismics.util.mime.MimeType;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.FormParam;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -43,22 +76,25 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
 import org.joda.time.format.DateTimeParser;
 
-import jakarta.json.Json;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObjectBuilder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.StreamingOutput;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Document REST resources.
@@ -496,12 +532,20 @@ public class DocumentResource extends BaseResource {
     }
 
     /**
+     * Returns all documents.
      *
-     * @param limit Page limit
-     * @param offset Page offset
+     * @api {post} /document/list Get documents
+     * @apiDescription Get documents exposed as a POST endpoint to allow longer search parameters, see the GET endpoint for the API info
+     * @apiName PostDocumentList
+     * @apiGroup Document
+     * @apiVersion 1.12.0
+     *
+     * @param limit      Page limit
+     * @param offset     Page offset
      * @param sortColumn Sort column
-     * @param asc Sorting
-     * @param search Search query
+     * @param asc        Sorting
+     * @param search     Search query
+     * @param files      Files list
      * @return Response
      */
     @POST
@@ -683,11 +727,12 @@ public class DocumentResource extends BaseResource {
                     break;
                 case "title":
                     // New title criteria
-                    documentCriteria.setTitle(paramValue);
+                    documentCriteria.getTitleList().add(paramValue);
                     break;
                 case "titles":
                     // New titles criteria
-                    documentCriteria.setTitles(Arrays.asList(paramValue.split("\\|")));
+                    // @TODO : remove this
+                    documentCriteria.getTitleList().addAll(Arrays.asList(paramValue.split("\\|")));
                     break;
                 default:
                     fullQuery.add(criteria);
