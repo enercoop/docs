@@ -88,11 +88,6 @@ public class DocumentCriteria {
      */
     private List<String> titleList = new ArrayList<>();
 
-    /**
-     * The titles
-     */
-    private List<String> titles;
-
     public List<String> getTargetIdList() {
         return targetIdList;
     }
