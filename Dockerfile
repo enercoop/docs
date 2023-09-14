@@ -41,6 +41,17 @@ RUN apt-get update && \
 ADD docs.xml /app/webapps/docs.xml
 ADD docs-web/target/docs-web-*.war /app/webapps/docs.war
 
+USER root
+
+RUN usermod -u 1003 jetty
+RUN groupmod -g 1003 jetty
+
+RUN chown jetty /app/webapps/docs.xml
+RUN chown jetty /app/webapps/docs.war
+RUN chown -R jetty /tmp
+
+USER jetty
+
 ENV JAVA_OPTIONS -Xmx1g
 
 WORKDIR /app

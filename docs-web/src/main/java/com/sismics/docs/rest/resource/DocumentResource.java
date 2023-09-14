@@ -85,6 +85,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -740,6 +741,10 @@ public class DocumentResource extends BaseResource {
                     // New title criteria
                     documentCriteria.getTitleList().add(paramValue);
                     break;
+                case "titles":
+                    // New titles criteria
+                    // @TODO : remove this
+                    documentCriteria.getTitleList().addAll(Arrays.asList(paramValue.split("\\|")));
                 default:
                     fullQuery.add(criteria);
                     break;
