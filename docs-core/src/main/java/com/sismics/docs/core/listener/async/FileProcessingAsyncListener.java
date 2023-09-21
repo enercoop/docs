@@ -137,6 +137,7 @@ public class FileProcessingAsyncListener {
      * @return Text content
      */
     private String extractContent(FileEvent event, User user, File file) {
+        // The "if true" avoid the "statement not reachable" error
         if (true) {
             return null;
         }
