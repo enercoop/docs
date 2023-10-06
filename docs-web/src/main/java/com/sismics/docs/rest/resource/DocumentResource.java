@@ -745,6 +745,7 @@ public class DocumentResource extends BaseResource {
                     // New titles criteria
                     // @TODO : remove this
                     documentCriteria.getTitleList().addAll(Arrays.asList(paramValue.split("\\|")));
+                    break;
                 default:
                     fullQuery.add(criteria);
                     break;
