@@ -6,7 +6,7 @@
   <groupId>com.sismics.docs</groupId>
   <artifactId>docs-parent</artifactId>
   <packaging>pom</packaging>
-  <version>1.12-SNAPSHOT</version>
+  <version>1.11.1-SNAPSHOT</version>
 
   <name>Docs Parent</name>
 
@@ -64,9 +64,9 @@
   </properties>
 
   <scm>
-    <connection>scm:git:https://github.com/sismics/docs.git</connection>
-    <developerConnection>scm:git:https://github.com/docs/docs.git</developerConnection>
-    <url>scm:git:https://github.com/sismics/docs.git</url>
+    <connection>scm:git:git@github.com:enercoop/docs.git</connection>
+    <url>https://github.com/enercoop/docs</url>
+    <developerConnection>scm:git:git@github.com:enercoop/docs.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
 
